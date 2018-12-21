@@ -38,6 +38,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.MyViev
     @Override
     public void onBindViewHolder(@NonNull MyVievHolder myVievHolder, int i) {
         myVievHolder.txt_category_name.setText(categories.get(i).getName());
+
     }
 
     @Override

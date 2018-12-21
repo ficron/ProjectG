@@ -1,8 +1,11 @@
 package ua.pp.leonets.quiztest;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -10,6 +13,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -25,19 +29,28 @@ import android.widget.TextView;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
 
+import org.w3c.dom.Text;
+
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import ua.pp.leonets.quiztest.adapter.AnswerSheetAdapter;
+import ua.pp.leonets.quiztest.adapter.AnswerSheetHelperAdapter;
 import ua.pp.leonets.quiztest.adapter.QuestionFragmentAdapter;
 import ua.pp.leonets.quiztest.common.Common;
 import ua.pp.leonets.quiztest.dbhelper.DBHelper;
+import ua.pp.leonets.quiztest.dbhelper.OnlineDBHelper;
+import ua.pp.leonets.quiztest.interfaces.MyCallback;
 import ua.pp.leonets.quiztest.model.CurrentQuestion;
 import ua.pp.leonets.quiztest.model.Question;
 
 public class QuestionActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final int CODE_GET_RESULT = 9999;
     int time_play = Common.TOTAL_TIME;
     boolean isAnswerModeView = false;
 
@@ -46,7 +59,7 @@ public class QuestionActivity extends AppCompatActivity
 
     RecyclerView answer_sheet_view;
     AnswerSheetAdapter answerSheetAdapter;
-
+    AnswerSheetHelperAdapter answerSheetHelperAdapter;
 
     ViewPager viewPager;
     TabLayout tabLayout;
@@ -81,13 +94,207 @@ public class QuestionActivity extends AppCompatActivity
         takeQuestion();
 
 
+    }
+
+    private void finishGame() {
+        int position = viewPager.getCurrentItem();
+
+        QuestionFragment questionFragment = Common.fragmentsList.get(position);
+
+        //For showing correct answert call method here
+        CurrentQuestion question_state = questionFragment.getSelectedAnswer();
+        Common.answerSheetList.set(position, question_state); // Set question answer for answersheet
+        answerSheetAdapter.notifyDataSetChanged(); // Change color in answerSheet
+
+        countCorrectAnswer();
+        txt_right_answer.setText(new StringBuilder(String.format("%d", Common.right_answer_count))
+                .append("/")
+                .append(String.format("%d", Common.questionList.size())).toString());
+
+        txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
+
+        if (question_state.getType() == Common.ANSWER_TYPE.NO_ANSWER) {
+            questionFragment.showCorrectAnswer();
+            questionFragment.disableAnswer();
+        }
+
+        // Here we navigate to result Activity
+
+        Intent intent = new Intent(QuestionActivity.this, ResultActivity.class);
+        Common.timer = Common.TOTAL_TIME - time_play;
+        Common.no_answer_counter = Common.questionList.size() - (Common.wrong_answer_count + Common.right_answer_count);
+        Common.data_question = new StringBuilder(new Gson().toJson(Common.answerSheetList));
+
+        startActivityForResult(intent, CODE_GET_RESULT);
+
+
+    }
+
+    private void countCorrectAnswer() {
+        Common.right_answer_count = Common.wrong_answer_count = 0;
+
+        Log.d("TAG", "Common.answerSheetList.size()" + Common.answerSheetList.size());
+
+        int count = 0;
+        for (CurrentQuestion item : Common.answerSheetList) {
+            if (item == null) count++;
+        }
+        Log.d("TAG", "Common.answerSheetList.NULLsize " + count);
+
+
+        for (CurrentQuestion item : Common.answerSheetList) {
+
+            if (item.getType() == Common.ANSWER_TYPE.RIGHT_ANSWER) {
+                Common.right_answer_count++;
+            } else if (item.getType() == Common.ANSWER_TYPE.WRONG_ANSWER) {
+                Common.wrong_answer_count++;
+            }
+
+        }
+    }
+
+    private void genFragmentList() {
+        Common.fragmentsList.clear();
+
+        for (int i = 0; i < Common.questionList.size(); i++) {
+            Bundle bundle = new Bundle();
+            bundle.putInt("index", i);
+
+            QuestionFragment fragment = new QuestionFragment();
+            fragment.setArguments(bundle);
+
+            Common.fragmentsList.add(fragment);
+        }
+
+    }
+
+
+    private void countTimer() {
+        if (Common.countDownTimer == null) {
+
+
+            Common.countDownTimer = new CountDownTimer(Common.TOTAL_TIME, 1000) {
+                @Override
+                public void onTick(long l) {
+                    txt_timer.setText(String.format("%02d:%02d",
+                            TimeUnit.MILLISECONDS.toMinutes(l),
+                            TimeUnit.MILLISECONDS.toSeconds(l) -
+                                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(l))));
+                    time_play -= 1000;
+                }
+
+                @Override
+                public void onFinish() {
+                    //Finish QUIZ
+                    finishGame();
+                }
+            }.start();
+
+        } else {
+            Common.countDownTimer.cancel();
+
+            Common.countDownTimer = new CountDownTimer(Common.TOTAL_TIME, 1000) {
+                @Override
+                public void onTick(long l) {
+                    txt_timer.setText(String.format("%02d:02d",
+                            TimeUnit.MILLISECONDS.toMinutes(l),
+                            TimeUnit.MILLISECONDS.toSeconds(l)
+                                    - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(l))));
+                    time_play -= 1000;
+                }
+
+                @Override
+                public void onFinish() {
+                    //Finish QUIZ
+                }
+            }.start();
+        }
+
+    }
+
+    private void takeQuestion() {
+
+        if (!Common.isOnlineMode) {
+
+            Common.questionList = DBHelper.getInstance(this).getQuestionByCategory(Common.selectedCategory.getId());
+            if (Common.questionList.size() == 0) {
+                new MaterialStyledDialog.Builder(this)
+                        .setTitle("Ooops")
+                        .setIcon(R.drawable.ic_sentiment_very_dissatisfied_black_24dp)
+                        .setDescription("We don't have any questions in this " + Common.selectedCategory.getName() + " category")
+                        .setPositiveText("OK")
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                dialog.dismiss();
+                                finish();
+                            }
+                        }).show();
+            } else {
+                        /*
+            Generate answerSheet item from question
+            30 q = 30 answer sheet item
+            so 1 q = 1 a.s.i.
+             */
+
+                if (Common.answerSheetList.size() > 0) Common.answerSheetList.clear();
+
+                for (int i = 0; i < Common.questionList.size(); i++) {
+                    Common.answerSheetList.add(new CurrentQuestion(i, Common.ANSWER_TYPE.NO_ANSWER));
+                }
+            }
+            setupQuestion();
+        } else {
+            OnlineDBHelper.getInstance(this,
+                    FirebaseDatabase.getInstance())
+                    .readData(new MyCallback() {
+                        @Override
+                        public void setQuestionList(List<Question> questionList) {
+                            Common.questionList.clear();
+                            Common.questionList = questionList;
+
+                            if (Common.questionList.size() == 0) {
+                                new MaterialStyledDialog.Builder(QuestionActivity.this)
+                                        .setTitle("Ooops")
+                                        .setIcon(R.drawable.ic_sentiment_very_dissatisfied_black_24dp)
+                                        .setDescription("We don't have any questions in this " + Common.selectedCategory.getName() + " category")
+                                        .setPositiveText("OK")
+                                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                            @Override
+                                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                                dialog.dismiss();
+                                                finish();
+                                            }
+                                        }).show();
+                            } else {
+                        /*
+            Generate answerSheet item from question
+            30 q = 30 answer sheet item
+            so 1 q = 1 a.s.i.
+             */
+
+                                if (Common.answerSheetList.size() > 0)
+                                    Common.answerSheetList.clear();
+
+                                for (int i = 0; i < Common.questionList.size(); i++) {
+                                    Common.answerSheetList.add(new CurrentQuestion(i, Common.ANSWER_TYPE.NO_ANSWER));
+                                }
+                            }
+                            setupQuestion();
+                        }
+                    }, Common.selectedCategory.getName().replace(" ", "").replace("/", "_"));
+
+        }
+    }
+
+    private void setupQuestion() {
+
         if (Common.questionList.size() > 0) {
 
             // Show TextView rightAnswer and TextView  - timer
             txt_right_answer = (TextView) findViewById(R.id.txt_question_right);
             txt_right_answer.setVisibility(View.VISIBLE);
             txt_right_answer.setText(new StringBuilder(String.format("%d/%d", Common.right_answer_count, Common.questionList.size())));
-
 
 
             txt_timer = (TextView) findViewById(R.id.txt_timer);
@@ -207,147 +414,6 @@ public class QuestionActivity extends AppCompatActivity
             });
 
         }
-
-    }
-
-    private void finishGame() {
-        int position = viewPager.getCurrentItem();
-
-        QuestionFragment questionFragment = Common.fragmentsList.get(position);
-
-        //For showing correct answert call method here
-        CurrentQuestion question_state = questionFragment.getSelectedAnswer();
-        Common.answerSheetList.set(position, question_state); // Set question answer for answersheet
-        answerSheetAdapter.notifyDataSetChanged(); // Change color in answerSheet
-
-        countCorrectAnswer();
-        txt_right_answer.setText(new StringBuilder(String.format("%d", Common.right_answer_count))
-                .append("/")
-                .append(String.format("%d", Common.questionList.size())).toString());
-
-        txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
-
-        if (question_state.getType() == Common.ANSWER_TYPE.NO_ANSWER) {
-            questionFragment.showCorrectAnswer();
-            questionFragment.disableAnswer();
-
-        }
-    }
-
-    private void countCorrectAnswer() {
-        Common.right_answer_count = Common.wrong_answer_count = 0;
-
-        Log.d("TAG","Common.answerSheetList.size()"+Common.answerSheetList.size());
-
-        int count = 0;
-        for (CurrentQuestion item : Common.answerSheetList) {
-            if (item ==null)count++;
-        }
-        Log.d("TAG","Common.answerSheetList.NULLsize "+count);
-
-
-        for (CurrentQuestion item : Common.answerSheetList)
-        {
-
-                if (item.getType() == Common.ANSWER_TYPE.RIGHT_ANSWER) {
-                    Common.right_answer_count++;
-                } else if (item.getType() == Common.ANSWER_TYPE.WRONG_ANSWER) {
-                    Common.wrong_answer_count++;
-                }
-
-        }
-    }
-
-    private void genFragmentList() {
-        Common.fragmentsList.clear();
-
-        for (int i = 0; i < Common.questionList.size(); i++) {
-            Bundle bundle = new Bundle();
-            bundle.putInt("index", i);
-
-            QuestionFragment fragment = new QuestionFragment();
-            fragment.setArguments(bundle);
-
-            Common.fragmentsList.add(fragment);
-        }
-
-    }
-
-
-    private void countTimer() {
-        if (Common.countDownTimer == null) {
-
-
-            Common.countDownTimer = new CountDownTimer(Common.TOTAL_TIME, 1000) {
-                @Override
-                public void onTick(long l) {
-                    txt_timer.setText(String.format("%02d:%02d",
-                            TimeUnit.MILLISECONDS.toMinutes(l),
-                            TimeUnit.MILLISECONDS.toSeconds(l) -
-                                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(l))));
-                    time_play -= 1000;
-                }
-
-                @Override
-                public void onFinish() {
-                    //Finish QUIZ
-                }
-            }.start();
-
-        } else {
-            Common.countDownTimer.cancel();
-
-            Common.countDownTimer = new CountDownTimer(Common.TOTAL_TIME, 1000) {
-                @Override
-                public void onTick(long l) {
-                    txt_timer.setText(String.format("%02d:02d",
-                            TimeUnit.MILLISECONDS.toMinutes(l),
-                            TimeUnit.MILLISECONDS.toSeconds(l)
-                                    - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(l))));
-                    time_play -= 1000;
-                }
-
-                @Override
-                public void onFinish() {
-                    //Finish QUIZ
-                }
-            }.start();
-        }
-
-    }
-
-    private void takeQuestion() {
-
-
-        Common.questionList = DBHelper.getInstance(this).getQuestionByCategory(Common.selectedCategory.getId());
-        if (Common.questionList.size() == 0) {
-            new MaterialStyledDialog.Builder(this)
-                    .setTitle("Ooops")
-                    .setIcon(R.drawable.ic_sentiment_very_dissatisfied_black_24dp)
-                    .setDescription("We don't have any questions in this " + Common.selectedCategory.getName() + " category")
-                    .setPositiveText("OK")
-                    .onPositive(new MaterialDialog.SingleButtonCallback() {
-                        @Override
-                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            dialog.dismiss();
-                            finish();
-                        }
-                    }).show();
-        } else {
-                        /*
-            Generate answerSheet item from question
-            30 q = 30 answer sheet item
-            so 1 q = 1 a.s.i.
-             */
-
-            if (Common.answerSheetList.size() > 0) Common.answerSheetList.clear();
-
-            for (int i = 0; i < Common.questionList.size(); i++) {
-                Common.answerSheetList.add(new CurrentQuestion(i, Common.ANSWER_TYPE.NO_ANSWER));
-            }
-        }
-
-
     }
 
     @Override
@@ -376,7 +442,7 @@ public class QuestionActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.menu_finish_game) {
-            if (!isAnswerModeView){
+            if (!isAnswerModeView) {
                 new MaterialStyledDialog.Builder(this)
                         .setTitle("Finish?")
                         .setIcon(R.drawable.ic_mood_black_24dp)
@@ -385,7 +451,7 @@ public class QuestionActivity extends AppCompatActivity
                         .onNegative(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            dialog.dismiss();
+                                dialog.dismiss();
                             }
                         })
                         .setPositiveText("Yes")
@@ -398,7 +464,7 @@ public class QuestionActivity extends AppCompatActivity
                         }).show();
 
 
-            }
+            } else finishGame();
 
             return true;
         }
@@ -411,7 +477,7 @@ public class QuestionActivity extends AppCompatActivity
         MenuItem item = menu.findItem(R.id.menu_wrong_answer);
         ConstraintLayout constraintLayout = (ConstraintLayout) item.getActionView();
 
-        txt_wrong_answer= (TextView) constraintLayout.findViewById(R.id.txt_wrong_answer);
+        txt_wrong_answer = (TextView) constraintLayout.findViewById(R.id.txt_wrong_answer);
         txt_wrong_answer.setText(String.valueOf(0));
 
 
@@ -441,5 +507,64 @@ public class QuestionActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == Activity.RESULT_OK) {
+            String action = data.getStringExtra("action");
+            if (action == null || TextUtils.isEmpty(action)) {
+                int questionNum = data.getIntExtra(Common.KEY_BACK_FROM_RESULT, -1);
+                viewPager.setCurrentItem(questionNum);
+
+                isAnswerModeView = true;
+                Common.countDownTimer.cancel();
+
+                txt_wrong_answer.setVisibility(View.GONE);
+                txt_right_answer.setVisibility(View.GONE);
+                txt_timer.setVisibility(View.GONE);
+            } else {
+                if (action.equals("viewquizanswer")) {
+                    viewPager.setCurrentItem(0);
+
+                    isAnswerModeView = true;
+                    Common.countDownTimer.cancel();
+
+                    txt_wrong_answer.setVisibility(View.GONE);
+                    txt_right_answer.setVisibility(View.GONE);
+                    txt_timer.setVisibility(View.GONE);
+
+                    for (int i = 0; i < Common.fragmentsList.size(); i++) {
+                        Common.fragmentsList.get(i).showCorrectAnswer();
+                        Common.fragmentsList.get(i).disableAnswer();
+                    }
+                } else if (action.equals("doitagain")) {
+                    viewPager.setCurrentItem(0);
+
+                    isAnswerModeView = false;
+                    countTimer();
+
+                    txt_wrong_answer.setVisibility(View.VISIBLE);
+                    txt_right_answer.setVisibility(View.VISIBLE);
+                    txt_timer.setVisibility(View.VISIBLE);
+
+                    for (CurrentQuestion item : Common.answerSheetList) {
+                        item.setType(Common.ANSWER_TYPE.NO_ANSWER); // RESET ALL QUESTION
+                    }
+                    answerSheetAdapter = new AnswerSheetAdapter(QuestionActivity.this, Common.answerSheetList);
+                    answerSheetAdapter.notifyDataSetChanged();
+                    answerSheetHelperAdapter.notifyDataSetChanged();
+
+                    for (int i = 0; i < Common.fragmentsList.size(); i++) {
+                        Common.fragmentsList.get(i).resetQuestion();
+                    }
+
+                }
+            }
+        }
+
+
     }
 }
