@@ -7,8 +7,6 @@ import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.GridLayoutManager;
@@ -32,8 +30,6 @@ import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +39,7 @@ import ua.pp.leonets.quiztest.adapter.QuestionFragmentAdapter;
 import ua.pp.leonets.quiztest.common.Common;
 import ua.pp.leonets.quiztest.dbhelper.DBHelper;
 import ua.pp.leonets.quiztest.dbhelper.OnlineDBHelper;
-import ua.pp.leonets.quiztest.interfaces.MyCallback;
+import ua.pp.leonets.quiztest.interfaces.MyQuestionListCallback;
 import ua.pp.leonets.quiztest.model.CurrentQuestion;
 import ua.pp.leonets.quiztest.model.Question;
 
@@ -103,6 +99,7 @@ public class QuestionActivity extends AppCompatActivity
 
         //For showing correct answert call method here
         CurrentQuestion question_state = questionFragment.getSelectedAnswer();
+
         Common.answerSheetList.set(position, question_state); // Set question answer for answersheet
         answerSheetAdapter.notifyDataSetChanged(); // Change color in answerSheet
 
@@ -126,7 +123,6 @@ public class QuestionActivity extends AppCompatActivity
         Common.data_question = new StringBuilder(new Gson().toJson(Common.answerSheetList));
 
         startActivityForResult(intent, CODE_GET_RESULT);
-
 
     }
 
@@ -170,49 +166,40 @@ public class QuestionActivity extends AppCompatActivity
 
 
     private void countTimer() {
-        if (Common.countDownTimer == null) {
 
-
-            Common.countDownTimer = new CountDownTimer(Common.TOTAL_TIME, 1000) {
-                @Override
-                public void onTick(long l) {
-                    txt_timer.setText(String.format("%02d:%02d",
-                            TimeUnit.MILLISECONDS.toMinutes(l),
-                            TimeUnit.MILLISECONDS.toSeconds(l) -
-                                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(l))));
-                    time_play -= 1000;
-                }
-
-                @Override
-                public void onFinish() {
-                    //Finish QUIZ
-                    finishGame();
-                }
-            }.start();
-
-        } else {
+        if (Common.countDownTimer != null) {
             Common.countDownTimer.cancel();
-
-            Common.countDownTimer = new CountDownTimer(Common.TOTAL_TIME, 1000) {
-                @Override
-                public void onTick(long l) {
-                    txt_timer.setText(String.format("%02d:02d",
-                            TimeUnit.MILLISECONDS.toMinutes(l),
-                            TimeUnit.MILLISECONDS.toSeconds(l)
-                                    - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(l))));
-                    time_play -= 1000;
-                }
-
-                @Override
-                public void onFinish() {
-                    //Finish QUIZ
-                }
-            }.start();
         }
 
+        Common.countDownTimer = new CountDownTimer(Common.TOTAL_TIME, 1000) {
+            @Override
+            public void onTick(long l) {
+                txt_timer.setText(String.format("%02d:%02d",
+                        TimeUnit.MILLISECONDS.toMinutes(l),
+                        TimeUnit.MILLISECONDS.toSeconds(l) -
+                                TimeUnit.MILLISECONDS.toMinutes(l) * 60
+                ));
+                time_play -= 1000;
+            }
+
+            @Override
+            public void onFinish() {
+                //Finish QUIZ
+                finishGame();
+            }
+        }.start();
     }
 
     private void takeQuestion() {
+
+        /**
+         TODO: Вирішити, що робити з б/д
+         чи онлайн чи SQL Lite
+         */
+
+        Common.isOnlineMode =true;
+
+
 
         if (!Common.isOnlineMode) {
 
@@ -245,9 +232,9 @@ public class QuestionActivity extends AppCompatActivity
             }
             setupQuestion();
         } else {
-            OnlineDBHelper.getInstance(this,
+            OnlineDBHelper.getInstance(QuestionActivity.this,
                     FirebaseDatabase.getInstance())
-                    .readData(new MyCallback() {
+                    .readData(new MyQuestionListCallback() {
                         @Override
                         public void setQuestionList(List<Question> questionList) {
                             Common.questionList.clear();
@@ -325,6 +312,7 @@ public class QuestionActivity extends AppCompatActivity
                     this,
                     Common.fragmentsList);
             viewPager.setAdapter(questionFragmentAdapter);
+            viewPager.setOffscreenPageLimit(Common.questionList.size());
 
             tabLayout.setupWithViewPager(viewPager);
 
@@ -338,9 +326,9 @@ public class QuestionActivity extends AppCompatActivity
                 int currentScroolDirection = 2;
 
                 private void setScroolingDirection(float positionOffset) {
-                    if ((1 - positionOffset) >= -0.5) {
+                    if ((1 - positionOffset) >= 0.5) {
                         this.currentScroolDirection = SCROOLING_RIGHT;
-                    } else if ((1 - positionOffset) <= -0.5) {
+                    } else if ((1 - positionOffset) <= 0.5) {
                         this.currentScroolDirection = SCROOLING_LEFT;
                     }
                 }
@@ -368,8 +356,8 @@ public class QuestionActivity extends AppCompatActivity
                 public void onPageSelected(int i) {
                     QuestionFragment questionFragment;
                     int position = 0;
-                    if (i > 0) {
 
+                    if (i > 0) {
                         if (isScrollingRight()) {
                             //if user scrool to righr, get previous fragment to calculate result
                             questionFragment = Common.fragmentsList.get(i - 1);
@@ -388,21 +376,35 @@ public class QuestionActivity extends AppCompatActivity
                     }
 
                     //For showing correct answert call method here
+
                     CurrentQuestion question_state = questionFragment.getSelectedAnswer();
-                    Common.answerSheetList.set(position, question_state); // Set question answer for answersheet
-                    answerSheetAdapter.notifyDataSetChanged(); // Change color in answerSheet
 
-                    countCorrectAnswer();
-                    txt_right_answer.setText(new StringBuilder(String.format("%d", Common.right_answer_count))
-                            .append("/")
-                            .append(String.format("%d", Common.questionList.size())).toString());
-                    txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
+                    Log.d("CorrectAnswer", "Common.answerSheetList.size()" + Common.answerSheetList.size());
+
+                    if (Common.answerSheetList.get(position).getType()==Common.ANSWER_TYPE.NO_ANSWER){
+                        Common.answerSheetList.set(position, question_state); // Set question answer for answersheet
+                        answerSheetAdapter.notifyDataSetChanged(); // Change color in answerSheet
+
+                        countCorrectAnswer();
+                        txt_right_answer.setText(new StringBuilder(String.format("%d", Common.right_answer_count))
+                                .append("/")
+                                .append(String.format("%d", Common.questionList.size())).toString());
+                        txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
+
+                        Log.d("CorrectAnswer",question_state.getType()+"  :2question_state.getType()");
 
 
-                    if (question_state.getType() == Common.ANSWER_TYPE.NO_ANSWER) {
+                    }
+
+
+                    if (question_state.getType() != Common.ANSWER_TYPE.NO_ANSWER) {
                         questionFragment.showCorrectAnswer();
                         questionFragment.disableAnswer();
                     }
+
+
+
+
                 }
 
                 @Override
@@ -412,7 +414,6 @@ public class QuestionActivity extends AppCompatActivity
                     }
                 }
             });
-
         }
     }
 
@@ -444,17 +445,17 @@ public class QuestionActivity extends AppCompatActivity
         if (id == R.id.menu_finish_game) {
             if (!isAnswerModeView) {
                 new MaterialStyledDialog.Builder(this)
-                        .setTitle("Finish?")
+                        .setTitle("Завершити?")
                         .setIcon(R.drawable.ic_mood_black_24dp)
-                        .setDescription("Do you really want to finish?")
-                        .setNegativeText("No")
+                        .setDescription("Ви дійсно хочете завершити?")
+                        .setNegativeText("Ні")
                         .onNegative(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                 dialog.dismiss();
                             }
                         })
-                        .setPositiveText("Yes")
+                        .setPositiveText("Так")
                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {

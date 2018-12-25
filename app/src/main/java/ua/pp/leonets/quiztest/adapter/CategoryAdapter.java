@@ -2,6 +2,7 @@ package ua.pp.leonets.quiztest.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -55,7 +56,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.MyViev
             super(itemView);
             card_category = (CardView) itemView.findViewById(R.id.card_category);
             txt_category_name = (TextView) itemView.findViewById(R.id.txt_category_name);
-
+            card_category.setCardBackgroundColor(Color.parseColor("#FFFEE0"));
 
             card_category.setOnClickListener(new View.OnClickListener() {
                 @Override

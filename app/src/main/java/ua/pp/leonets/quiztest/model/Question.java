@@ -3,19 +3,21 @@ package ua.pp.leonets.quiztest.model;
 public class Question {
 
     private int id;
-    private String questionText, questionImage, answerA, answerB, answerC, andwerD, correctAnswer;
+    private String questionText, questionImage, answerA, answerB, answerC, answerD, correctAnswer;
     private boolean isImageQuestion;
     private int categoryId;
 
+    public Question() {
+    }
 
-    public Question(int id, String questionText, String questionImage, String answerA, String answerB, String answerC, String andwerD, String correctAnswer, boolean isImageQuestion, int categoryId) {
+    public Question(int id, String questionText, String questionImage, String answerA, String answerB, String answerC, String answerD, String correctAnswer, boolean isImageQuestion, int categoryId) {
         this.id = id;
         this.questionText = questionText;
         this.questionImage = questionImage;
         this.answerA = answerA;
         this.answerB = answerB;
         this.answerC = answerC;
-        this.andwerD = andwerD;
+        this.answerD = answerD;
         this.correctAnswer = correctAnswer;
         this.isImageQuestion = isImageQuestion;
         this.categoryId = categoryId;
@@ -69,12 +71,12 @@ public class Question {
         this.answerC = answerC;
     }
 
-    public String getAndwerD() {
-        return andwerD;
+    public String getAnswerD() {
+        return answerD;
     }
 
-    public void setAndwerD(String andwerD) {
-        this.andwerD = andwerD;
+    public void setAnswerD(String answerD) {
+        this.answerD = answerD;
     }
 
     public String getCorrectAnswer() {

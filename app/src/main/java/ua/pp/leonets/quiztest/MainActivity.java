@@ -8,6 +8,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,12 +18,18 @@ import android.widget.CheckBox;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.List;
 
 import io.paperdb.Paper;
 import ua.pp.leonets.quiztest.adapter.CategoryAdapter;
 import ua.pp.leonets.quiztest.common.Common;
 import ua.pp.leonets.quiztest.common.SpaceDecoration;
 import ua.pp.leonets.quiztest.dbhelper.DBHelper;
+import ua.pp.leonets.quiztest.dbhelper.OnlineDBHelper;
+import ua.pp.leonets.quiztest.interfaces.MyCategoriesCallback;
+import ua.pp.leonets.quiztest.model.Category;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -107,13 +114,33 @@ public class MainActivity extends AppCompatActivity {
          * Get screen height
          * 8 - Max size of item in category
          */
-
+/*
         CategoryAdapter adapter = new CategoryAdapter(
                 this,
                 DBHelper.getInstance(this).getAllCategories());
         int spaceInPixel = 4;
         recycler_category.addItemDecoration(new SpaceDecoration(spaceInPixel));
         recycler_category.setAdapter(adapter);
+ */
+
+
+ OnlineDBHelper.getInstance(MainActivity.this, FirebaseDatabase.getInstance())
+        .getAllCategories(new MyCategoriesCallback() {
+            @Override
+            public void setCategoriesList(List<Category> categories) {
+                CategoryAdapter adapter = new CategoryAdapter(MainActivity.this,categories);
+                int spaceInPixel = 4;
+                recycler_category.addItemDecoration(new SpaceDecoration(spaceInPixel));
+                recycler_category.setAdapter(adapter);
+            }
+        });
+
+
+
+
+
+
+
 /*
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

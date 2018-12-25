@@ -4,7 +4,7 @@ import java.util.List;
 
 import ua.pp.leonets.quiztest.model.Question;
 
-public interface MyCallback {
+public interface MyQuestionListCallback {
 
     void setQuestionList (List<Question> questionList);
 }

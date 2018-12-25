@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
@@ -17,7 +18,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -36,6 +36,8 @@ public class QuestionFragment extends Fragment implements IQuestion {
     CheckBox ckbA, ckbB, ckbC, ckbD;
     FrameLayout layout_Image;
     ProgressBar progressBar;
+
+    Button btnConfirm;
 
     Question question;
     int questionIndex = -1;
@@ -126,7 +128,7 @@ public class QuestionFragment extends Fragment implements IQuestion {
             });
 
             ckbD = (CheckBox) itemView.findViewById(R.id.ckbD);
-            ckbD.setText(question.getAndwerD());
+            ckbD.setText(question.getAnswerD());
             ckbD.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -144,7 +146,6 @@ public class QuestionFragment extends Fragment implements IQuestion {
 
         return itemView;
     }
-
     @Override
     public CurrentQuestion getSelectedAnswer() {
         Log.d("CorrectAnswer", "Common.selected_values.size "+Common.selected_values.size());
@@ -187,14 +188,18 @@ public class QuestionFragment extends Fragment implements IQuestion {
                 if (result.toString().equals(question.getCorrectAnswer())) {
                     currentQuestion.setType(Common.ANSWER_TYPE.RIGHT_ANSWER);
                 } else {
+
                     currentQuestion.setType(Common.ANSWER_TYPE.WRONG_ANSWER);
                 }
             } else {
-                currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER);
+                Log.d("CorrectAnswer", "!TextUtils.isEmpty(result) - currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER");
+
+
+                //currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER);
             }
 
         } else {
-            Toast.makeText(getContext(), "Cannot get question", Toast.LENGTH_LONG).show();
+            Log.d("CorrectAnswer", "Cannot get question - currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER");
             currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER);
         }
 
@@ -215,19 +220,19 @@ public class QuestionFragment extends Fragment implements IQuestion {
 
             if (answer.equals("A")) {
                 ckbA.setTypeface(null, Typeface.BOLD);
-                ckbA.setTextColor(Color.RED);
+                ckbA.setTextColor(Color.GREEN);
             }
             if (answer.equals("B")) {
                 ckbB.setTypeface(null, Typeface.BOLD);
-                ckbB.setTextColor(Color.RED);
+                ckbB.setTextColor(Color.GREEN);
             }
             if (answer.equals("C")) {
                 ckbC.setTypeface(null, Typeface.BOLD);
-                ckbC.setTextColor(Color.RED);
+                ckbC.setTextColor(Color.GREEN);
             }
             if (answer.equals("D")) {
                 ckbD.setTypeface(null, Typeface.BOLD);
-                ckbD.setTextColor(Color.RED);
+                ckbD.setTextColor(Color.GREEN);
             }
         }
     }
@@ -266,7 +271,5 @@ public class QuestionFragment extends Fragment implements IQuestion {
         ckbC.setTextColor(Color.BLACK);
         ckbD.setTypeface(null, Typeface.NORMAL);
         ckbD.setTextColor(Color.BLACK);
-
-
     }
 }
