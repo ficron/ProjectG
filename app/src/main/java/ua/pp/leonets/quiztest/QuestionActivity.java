@@ -110,10 +110,23 @@ public class QuestionActivity extends AppCompatActivity
 
         txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
 
+/*
         if (question_state.getType() == Common.ANSWER_TYPE.NO_ANSWER) {
             questionFragment.showCorrectAnswer();
             questionFragment.disableAnswer();
         }
+ */
+
+        for (QuestionFragment fQuestionFragment:Common.fragmentsList){
+            if (fQuestionFragment.getSelectedAnswer().getType() == Common.ANSWER_TYPE.NO_ANSWER) {
+                fQuestionFragment.showCorrectAnswer();
+                fQuestionFragment.disableAnswer();
+            }
+        }
+
+
+
+
 
         // Here we navigate to result Activity
 
