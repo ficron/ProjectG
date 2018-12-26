@@ -23,6 +23,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -504,18 +505,12 @@ public class QuestionActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.menu_done) {
+            finishGame();
+        } else if (id == R.id.menu_adjust) {
+            Toast.makeText(this,"menu_adjust В розробці", Toast.LENGTH_LONG).show();
+        } else if (id == R.id.menu_send_error) {
+            Toast.makeText(this,"menu_send_error В розробці", Toast.LENGTH_LONG).show();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -578,7 +573,6 @@ public class QuestionActivity extends AppCompatActivity
                 }
             }
         }
-
 
     }
 }

@@ -12,10 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="fill_horizontal"
-        android:src="@drawable/initv2"
+        android:src="@mipmap/initview_foreground"
         android:onClick="redirect"/>
-
-
-
 
 </LinearLayout>
