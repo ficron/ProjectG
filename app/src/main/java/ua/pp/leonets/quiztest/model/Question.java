@@ -91,15 +91,16 @@ public class Question {
         return isImageQuestion;
     }
 
-    public void setIsImageQuestion(boolean isImageQuestion) {
-        this.isImageQuestion = isImageQuestion;
+    public void setIsImageQuestion(int imageQuestion) {
+        if (imageQuestion==1) isImageQuestion=true;
+        else isImageQuestion=false;
     }
 
-    public int getCategory() {
+    public int getCategoryId() {
         return categoryId;
     }
 
-    public void setCategory(int category) {
-        this.categoryId = category;
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
     }
 }

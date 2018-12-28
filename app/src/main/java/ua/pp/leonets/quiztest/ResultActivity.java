@@ -88,8 +88,9 @@ public class ResultActivity extends AppCompatActivity {
 
         txt_timer.setText(String.format("%02d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(Common.timer),
-                TimeUnit.MILLISECONDS.toMinutes(Common.timer)
-                        - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(Common.timer))));
+                TimeUnit.MILLISECONDS.toSeconds(Common.timer) - TimeUnit.MILLISECONDS.toMinutes(Common.timer) * 60
+                )
+        );
 
         txt_right_answer.setText(new StringBuilder("")
                 .append(Common.right_answer_count)
@@ -212,17 +213,17 @@ public class ResultActivity extends AppCompatActivity {
     private void doQuizAgain() {
 
         new MaterialStyledDialog.Builder(this)
-                .setTitle("Шо, опять???")
+                .setTitle("Пройти тест знову?")
                 .setIcon(R.drawable.ic_mood_black_24dp)
                 .setDescription("Все текущая информация сотрется")
-                .setNegativeText("Неа")
+                .setNegativeText("Ні")
                 .onNegative(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         dialog.dismiss();
                     }
                 })
-                .setPositiveText("Да")
+                .setPositiveText("Так")
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {

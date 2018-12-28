@@ -2,6 +2,7 @@ package ua.pp.leonets.quiztest;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
@@ -51,7 +52,6 @@ public class QuestionActivity extends AppCompatActivity
     int time_play = Common.TOTAL_TIME;
     boolean isAnswerModeView = false;
 
-
     TextView txt_right_answer, txt_timer, txt_wrong_answer;
 
     RecyclerView answer_sheet_view;
@@ -73,9 +73,9 @@ public class QuestionActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_question);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -86,59 +86,10 @@ public class QuestionActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
-        //
         takeQuestion();
-
-
     }
 
-    private void finishGame() {
-        int position = viewPager.getCurrentItem();
 
-        QuestionFragment questionFragment = Common.fragmentsList.get(position);
-
-        //For showing correct answert call method here
-        CurrentQuestion question_state = questionFragment.getSelectedAnswer();
-
-        Common.answerSheetList.set(position, question_state); // Set question answer for answersheet
-        answerSheetAdapter.notifyDataSetChanged(); // Change color in answerSheet
-
-        countCorrectAnswer();
-        txt_right_answer.setText(new StringBuilder(String.format("%d", Common.right_answer_count))
-                .append("/")
-                .append(String.format("%d", Common.questionList.size())).toString());
-
-        txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
-
-/*
-        if (question_state.getType() == Common.ANSWER_TYPE.NO_ANSWER) {
-            questionFragment.showCorrectAnswer();
-            questionFragment.disableAnswer();
-        }
- */
-
-        for (QuestionFragment fQuestionFragment:Common.fragmentsList){
-            if (fQuestionFragment.getSelectedAnswer().getType() == Common.ANSWER_TYPE.NO_ANSWER) {
-                fQuestionFragment.showCorrectAnswer();
-                fQuestionFragment.disableAnswer();
-            }
-        }
-
-
-
-
-
-        // Here we navigate to result Activity
-
-        Intent intent = new Intent(QuestionActivity.this, ResultActivity.class);
-        Common.timer = Common.TOTAL_TIME - time_play;
-        Common.no_answer_counter = Common.questionList.size() - (Common.wrong_answer_count + Common.right_answer_count);
-        Common.data_question = new StringBuilder(new Gson().toJson(Common.answerSheetList));
-
-        startActivityForResult(intent, CODE_GET_RESULT);
-
-    }
 
     private void countCorrectAnswer() {
         Common.right_answer_count = Common.wrong_answer_count = 0;
@@ -190,8 +141,7 @@ public class QuestionActivity extends AppCompatActivity
             public void onTick(long l) {
                 txt_timer.setText(String.format("%02d:%02d",
                         TimeUnit.MILLISECONDS.toMinutes(l),
-                        TimeUnit.MILLISECONDS.toSeconds(l) -
-                                TimeUnit.MILLISECONDS.toMinutes(l) * 60
+                        TimeUnit.MILLISECONDS.toSeconds(l) - TimeUnit.MILLISECONDS.toMinutes(l) * 60
                 ));
                 time_play -= 1000;
             }
@@ -212,7 +162,8 @@ public class QuestionActivity extends AppCompatActivity
          */
 
         Common.isOnlineMode =true;
-
+        Common.isActiveActivity = true;
+        Log.d("myTag","isActiveActivity"+Common.isActiveActivity);
 
 
         if (!Common.isOnlineMode) {
@@ -287,6 +238,10 @@ public class QuestionActivity extends AppCompatActivity
 
         }
     }
+
+
+
+
 
     private void setupQuestion() {
 
@@ -522,7 +477,8 @@ public class QuestionActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK) {
+            Log.d("TAG","Activity.RESULT_OK");
             String action = data.getStringExtra("action");
             if (action == null || TextUtils.isEmpty(action)) {
                 int questionNum = data.getIntExtra(Common.KEY_BACK_FROM_RESULT, -1);
@@ -536,6 +492,7 @@ public class QuestionActivity extends AppCompatActivity
                 txt_timer.setVisibility(View.GONE);
             } else {
                 if (action.equals("viewquizanswer")) {
+                    Log.d("TAG","viewquizanswer");
                     viewPager.setCurrentItem(0);
 
                     isAnswerModeView = true;
@@ -544,12 +501,14 @@ public class QuestionActivity extends AppCompatActivity
                     txt_wrong_answer.setVisibility(View.GONE);
                     txt_right_answer.setVisibility(View.GONE);
                     txt_timer.setVisibility(View.GONE);
+                    txt_timer.setTextColor(Color.GRAY);
 
                     for (int i = 0; i < Common.fragmentsList.size(); i++) {
                         Common.fragmentsList.get(i).showCorrectAnswer();
                         Common.fragmentsList.get(i).disableAnswer();
                     }
                 } else if (action.equals("doitagain")) {
+                    Log.d("doitagain","doitagain");
                     viewPager.setCurrentItem(0);
 
                     isAnswerModeView = false;
@@ -562,6 +521,14 @@ public class QuestionActivity extends AppCompatActivity
                     for (CurrentQuestion item : Common.answerSheetList) {
                         item.setType(Common.ANSWER_TYPE.NO_ANSWER); // RESET ALL QUESTION
                     }
+                    Log.d("doitagain","RESET ALL QUESTION_Common.ANSWER_TYPE.NO_ANSWER");
+
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                     answerSheetAdapter = new AnswerSheetAdapter(QuestionActivity.this, Common.answerSheetList);
                     answerSheetAdapter.notifyDataSetChanged();
                     answerSheetHelperAdapter.notifyDataSetChanged();
@@ -569,10 +536,61 @@ public class QuestionActivity extends AppCompatActivity
                     for (int i = 0; i < Common.fragmentsList.size(); i++) {
                         Common.fragmentsList.get(i).resetQuestion();
                     }
-
+                    Log.d("doitagain","RESET ALL QUESTION.resetQuestion()");
                 }
             }
         }
 
     }
+
+    private void finishGame() {
+        Common.isActiveActivity = false;
+        int position = viewPager.getCurrentItem();
+
+        QuestionFragment questionFragment = Common.fragmentsList.get(position);
+
+        //For showing correct answert call method here
+        CurrentQuestion question_state = questionFragment.getSelectedAnswer();
+
+        Common.answerSheetList.set(position, question_state); // Set question answer for answersheet
+        answerSheetAdapter.notifyDataSetChanged(); // Change color in answerSheet
+
+        countCorrectAnswer();
+        txt_right_answer.setText(new StringBuilder(String.format("%d", Common.right_answer_count))
+                .append("/")
+                .append(String.format("%d", Common.questionList.size())).toString());
+
+        txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
+
+/*
+        if (question_state.getType() == Common.ANSWER_TYPE.NO_ANSWER) {
+            questionFragment.showCorrectAnswer();
+            questionFragment.disableAnswer();
+        }
+ */
+
+        for (QuestionFragment fQuestionFragment:Common.fragmentsList){
+            if (fQuestionFragment.getSelectedAnswer().getType() == Common.ANSWER_TYPE.NO_ANSWER) {
+                fQuestionFragment.showCorrectAnswer();
+                fQuestionFragment.disableAnswer();
+            }
+        }
+
+
+
+
+
+        // Here we navigate to result Activity
+
+        Intent intent = new Intent(QuestionActivity.this, ResultActivity.class);
+        Common.timer = Common.TOTAL_TIME - time_play;
+        Common.no_answer_counter = Common.questionList.size() - (Common.wrong_answer_count + Common.right_answer_count);
+        Common.data_question = new StringBuilder(new Gson().toJson(Common.answerSheetList));
+
+        startActivityForResult(intent, CODE_GET_RESULT);
+
+    }
+
+
+
 }
