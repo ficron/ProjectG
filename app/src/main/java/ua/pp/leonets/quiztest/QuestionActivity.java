@@ -3,6 +3,7 @@ package ua.pp.leonets.quiztest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
@@ -465,12 +466,29 @@ public class QuestionActivity extends AppCompatActivity
         } else if (id == R.id.menu_adjust) {
             Toast.makeText(this,"menu_adjust В розробці", Toast.LENGTH_LONG).show();
         } else if (id == R.id.menu_send_error) {
-            Toast.makeText(this,"menu_send_error В розробці", Toast.LENGTH_LONG).show();
+            String aEmailList[] = { "authentikos.supp@gmail.com"};
+            Question currentQuestion = Common.questionList.get(viewPager.getCurrentItem());
+            composeEmail(aEmailList, currentQuestion);
+            //формируем email - получателей
+
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    public void composeEmail(String[] addresses, Question question) {
+        String subject = "Помилка у питанні  ID"+question.getId();
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+        intent.putExtra(Intent.EXTRA_EMAIL, addresses);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT, "Питання: "+question.getQuestionText());
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
     @Override

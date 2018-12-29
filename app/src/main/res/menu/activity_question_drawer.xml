@@ -19,7 +19,7 @@
             <item
                 android:id="@+id/menu_send_error"
                 android:icon="@drawable/ic_send_black_24dp"
-                android:title="Знайшов помилку(у розробці)" />
+                android:title="Знайшов помилку" />
         </menu>
     </item>
 
