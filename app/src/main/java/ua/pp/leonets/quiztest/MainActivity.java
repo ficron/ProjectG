@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Тести для ГПУ");
+        toolbar.setTitle("Оберіть категорію для тестування");
         setSupportActionBar(toolbar);
 
         recycler_category = (RecyclerView) findViewById(R.id.recycler_category);

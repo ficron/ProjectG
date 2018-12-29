@@ -76,6 +76,7 @@ public class QuestionActivity extends AppCompatActivity
         setContentView(R.layout.activity_question);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(Common.selectedCategory.getName());
         setSupportActionBar(toolbar);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
