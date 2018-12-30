@@ -520,7 +520,6 @@ public class QuestionActivity extends AppCompatActivity
                     txt_wrong_answer.setVisibility(View.GONE);
                     txt_right_answer.setVisibility(View.GONE);
                     txt_timer.setVisibility(View.GONE);
-                    txt_timer.setTextColor(Color.GRAY);
 
                     for (int i = 0; i < Common.fragmentsList.size(); i++) {
                         Common.fragmentsList.get(i).showCorrectAnswer();
@@ -542,14 +541,12 @@ public class QuestionActivity extends AppCompatActivity
                     }
                     Log.d("doitagain","RESET ALL QUESTION_Common.ANSWER_TYPE.NO_ANSWER");
 
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+
 
                     answerSheetAdapter = new AnswerSheetAdapter(QuestionActivity.this, Common.answerSheetList);
                     answerSheetAdapter.notifyDataSetChanged();
+
+                    answerSheetHelperAdapter = new AnswerSheetHelperAdapter(this,Common.answerSheetList);
                     answerSheetHelperAdapter.notifyDataSetChanged();
 
                     for (int i = 0; i < Common.fragmentsList.size(); i++) {
