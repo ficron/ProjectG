@@ -22,6 +22,12 @@ import android.widget.Toast;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 import ua.pp.leonets.quiztest.common.Common;
 import ua.pp.leonets.quiztest.interfaces.IQuestion;
 import ua.pp.leonets.quiztest.model.CurrentQuestion;
@@ -81,6 +87,13 @@ public class QuestionFragment extends Fragment implements IQuestion {
                 layout_Image.setVisibility(View.GONE);
             }
 
+            final boolean isSingle;
+
+            if (question.getCorrectAnswers().size()>1){
+                isSingle = false;
+            }else {
+                isSingle = true;
+            }
 
             //View
             txt_question_txt = (TextView) itemView.findViewById(R.id.text_question_txt);
@@ -93,6 +106,12 @@ public class QuestionFragment extends Fragment implements IQuestion {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (b) {
+
+                        if (isSingle){
+                            uncheckedAll();
+                            Log.d("TAG","Common.selected_values.size()"+Common.selected_values.size());
+                        }
+
                         Common.selected_values.add(ckbA.getText().toString());
                     } else {
                         Common.selected_values.remove(ckbA.getText().toString());
@@ -107,6 +126,12 @@ public class QuestionFragment extends Fragment implements IQuestion {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (b) {
+
+                        if (isSingle){
+                            uncheckedAll();
+                            Log.d("TAG","Common.selected_values.size()"+Common.selected_values.size());
+                        }
+
                         Common.selected_values.add(ckbB.getText().toString());
                     } else {
                         Common.selected_values.remove(ckbB.getText().toString());
@@ -120,6 +145,12 @@ public class QuestionFragment extends Fragment implements IQuestion {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (b) {
+
+                        if (isSingle){
+                            uncheckedAll();
+                            Log.d("TAG","Common.selected_values.size()"+Common.selected_values.size());
+                        }
+
                         Common.selected_values.add(ckbC.getText().toString());
                     } else {
                         Common.selected_values.remove(ckbC.getText().toString());
@@ -133,6 +164,12 @@ public class QuestionFragment extends Fragment implements IQuestion {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (b) {
+
+                        if (isSingle){
+                            uncheckedAll();
+                            Log.d("TAG","Common.selected_values.size()"+Common.selected_values.size());
+                        }
+
                         Common.selected_values.add(ckbD.getText().toString());
                     } else {
                         Common.selected_values.remove(ckbD.getText().toString());
@@ -150,58 +187,23 @@ public class QuestionFragment extends Fragment implements IQuestion {
     public CurrentQuestion getSelectedAnswer() {
         Log.d("CorrectAnswer", "Common.selected_values.size "+Common.selected_values.size());
         CurrentQuestion currentQuestion = new CurrentQuestion(questionIndex, Common.ANSWER_TYPE.NO_ANSWER);
-        StringBuilder result = new StringBuilder();
-        if (Common.selected_values.size() > 1)
-        {
 
-            /*
-            if multichose
-            split anwer to array
-            arr[0] A.New York
-            arr[1] B.Paris
-             */
+        if (question!=null&&Common.selected_values.size()!=0){
+            List<String> correctAnswers = question.getCorrectAnswers();
 
-            Object[] arrayAnswer = Common.selected_values.toArray();
+            Collections.sort(correctAnswers);
+            Collections.sort(Common.selected_values);
 
-            for (int i = 0; i < arrayAnswer.length; i++) {
-                String mAnswer = (String)arrayAnswer[i];
-                if (i >0) {
-                    result.append(mAnswer.substring(0, 1));
-                } else {
-                    result.append(mAnswer.substring(0, 1).concat(","));
-                }
+            if (correctAnswers.equals(Common.selected_values)){
+                currentQuestion.setType(Common.ANSWER_TYPE.RIGHT_ANSWER);
+            }else {
+                currentQuestion.setType(Common.ANSWER_TYPE.WRONG_ANSWER);
             }
 
-
-        } else if (Common.selected_values.size() == 1) {
-            //if obnly one choise
-            Object[] arrayAnswer = Common.selected_values.toArray();
-            String answer = (String) arrayAnswer[0];
-            result.append(((String) arrayAnswer[0]).substring(0, 1));
-        }
-
-        Log.d("CorrectAnswer","result: "+result.toString());
-
-        if (question != null) {
-            //Compare user answer with correct answer
-            if (!TextUtils.isEmpty(result)) {
-                if (result.toString().equals(question.getCorrectAnswer())) {
-                    currentQuestion.setType(Common.ANSWER_TYPE.RIGHT_ANSWER);
-                } else {
-
-                    currentQuestion.setType(Common.ANSWER_TYPE.WRONG_ANSWER);
-                }
-            } else {
-                Log.d("CorrectAnswer", "!TextUtils.isEmpty(result) - currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER");
-
-
-                //currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER);
-            }
-
-        } else {
-            Log.d("CorrectAnswer", "Cannot get question - currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER");
+        }else {
             currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER);
         }
+
 
         Common.selected_values.clear(); //Always clear seleceted values whn compare done
         return currentQuestion;
@@ -209,32 +211,32 @@ public class QuestionFragment extends Fragment implements IQuestion {
 
     @Override
     public void showCorrectAnswer() {
-//Bold correct answer
-        //Pattern : A , B
-        String[] correctAnser = question.getCorrectAnswer().split(",");
-
-        for (String answer : correctAnser) {
-            Log.d("CorrectAnswer","Type"+getSelectedAnswer().getType());
-            Log.d("CorrectAnswer",question.getQuestionText()+" correctAnswer"+answer);
 
 
-            if (answer.equals("A")) {
+        ArrayList<String> correctAnswers = question.getCorrectAnswers();
+        Iterator<String> iter = correctAnswers.iterator();
+
+        while (iter.hasNext()){
+            String answer = iter.next();
+
+            if (answer.equals(ckbA.getText().toString())) {
                 ckbA.setTypeface(null, Typeface.BOLD);
                 ckbA.setTextColor(Color.GREEN);
             }
-            if (answer.equals("B")) {
+            if (answer.equals(ckbB.getText().toString())) {
                 ckbB.setTypeface(null, Typeface.BOLD);
                 ckbB.setTextColor(Color.GREEN);
             }
-            if (answer.equals("C")) {
+            if (answer.equals(ckbC.getText().toString())) {
                 ckbC.setTypeface(null, Typeface.BOLD);
                 ckbC.setTextColor(Color.GREEN);
             }
-            if (answer.equals("D")) {
+            if (answer.equals(ckbD.getText().toString())) {
                 ckbD.setTypeface(null, Typeface.BOLD);
                 ckbD.setTextColor(Color.GREEN);
             }
         }
+
     }
 
     @Override
@@ -272,4 +274,16 @@ public class QuestionFragment extends Fragment implements IQuestion {
         ckbD.setTypeface(null, Typeface.NORMAL);
         ckbD.setTextColor(Color.BLACK);
     }
+
+    private void uncheckedAll(){
+        ckbA.setChecked(false);
+        ckbB.setChecked(false);
+        ckbC.setChecked(false);
+        ckbD.setChecked(false);
+
+
+    }
+
+
+
 }

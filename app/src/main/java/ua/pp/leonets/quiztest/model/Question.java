@@ -1,16 +1,20 @@
 package ua.pp.leonets.quiztest.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class Question {
 
     private int id;
-    private String questionText, questionImage, answerA, answerB, answerC, answerD, correctAnswer;
+    private String questionText, questionImage, answerA, answerB, answerC, answerD;
+    private ArrayList<String> correctAnswers = new ArrayList<>();
     private boolean isImageQuestion;
     private int categoryId;
 
     public Question() {
     }
 
-    public Question(int id, String questionText, String questionImage, String answerA, String answerB, String answerC, String answerD, String correctAnswer, boolean isImageQuestion, int categoryId) {
+    public Question(int id, String questionText, String questionImage, String answerA, String answerB, String answerC, String answerD, ArrayList<String> correctAnswers, boolean isImageQuestion, int categoryId) {
         this.id = id;
         this.questionText = questionText;
         this.questionImage = questionImage;
@@ -18,7 +22,7 @@ public class Question {
         this.answerB = answerB;
         this.answerC = answerC;
         this.answerD = answerD;
-        this.correctAnswer = correctAnswer;
+        this.correctAnswers = correctAnswers;
         this.isImageQuestion = isImageQuestion;
         this.categoryId = categoryId;
     }
@@ -79,12 +83,12 @@ public class Question {
         this.answerD = answerD;
     }
 
-    public String getCorrectAnswer() {
-        return correctAnswer;
+    public ArrayList<String> getCorrectAnswers() {
+        return correctAnswers;
     }
 
-    public void setCorrectAnswer(String correctAnswer) {
-        this.correctAnswer = correctAnswer;
+    public void setCorrectAnswer(ArrayList<String> correctAnswers) {
+        this.correctAnswers = correctAnswers;
     }
 
     public boolean isImageQuestion() {

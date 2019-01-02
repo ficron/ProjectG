@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dmax.dialog.SpotsDialog;
+import ua.pp.leonets.quiztest.common.Common;
 import ua.pp.leonets.quiztest.interfaces.MyCategoriesCallback;
 import ua.pp.leonets.quiztest.interfaces.MyQuestionListCallback;
 import ua.pp.leonets.quiztest.model.Category;
@@ -35,7 +36,7 @@ public class OnlineDBHelper {
     public OnlineDBHelper(Context context, FirebaseDatabase firebaseDatabase) {
         this.firebaseDatabase = firebaseDatabase;
         this.context = context;
-        reference = this.firebaseDatabase.getReference("EDMTQuiz");
+        reference = this.firebaseDatabase.getReference("NewBaser");
     }
 
 
@@ -101,6 +102,11 @@ public class OnlineDBHelper {
                         }
                         myCallback.setQuestionList(questionList);
 
+
+
+                        for (Question question: Common.questionList){
+                            Log.d("TAG",question.getCorrectAnswers().size()+" :getCorrectAnswers().size()");
+                        }
                         if (dialog.isShowing())dialog.dismiss();
 
                     }

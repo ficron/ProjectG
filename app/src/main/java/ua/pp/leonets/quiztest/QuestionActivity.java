@@ -92,7 +92,6 @@ public class QuestionActivity extends AppCompatActivity
     }
 
 
-
     private void countCorrectAnswer() {
         Common.right_answer_count = Common.wrong_answer_count = 0;
 
@@ -156,97 +155,100 @@ public class QuestionActivity extends AppCompatActivity
         }.start();
     }
 
+
+    /**
+     * TODO: Вирішити, що робити з б/д
+     * чи онлайн чи SQL Lite
+     */
+
     private void takeQuestion() {
+        Common.isOnlineMode = true;
 
-        /**
-         TODO: Вирішити, що робити з б/д
-         чи онлайн чи SQL Lite
-         */
-
-        Common.isOnlineMode =true;
-        Common.isActiveActivity = true;
-        Log.d("myTag","isActiveActivity"+Common.isActiveActivity);
-
-
-        if (!Common.isOnlineMode) {
-
-            Common.questionList = DBHelper.getInstance(this).getQuestionByCategory(Common.selectedCategory.getId());
-            if (Common.questionList.size() == 0) {
-                new MaterialStyledDialog.Builder(this)
-                        .setTitle("Ooops")
-                        .setIcon(R.drawable.ic_sentiment_very_dissatisfied_black_24dp)
-                        .setDescription("We don't have any questions in this " + Common.selectedCategory.getName() + " category")
-                        .setPositiveText("OK")
-                        .onPositive(new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                dialog.dismiss();
-                                finish();
-                            }
-                        }).show();
-            } else {
-                        /*
-            Generate answerSheet item from question
-            30 q = 30 answer sheet item
-            so 1 q = 1 a.s.i.
-             */
-
-                if (Common.answerSheetList.size() > 0) Common.answerSheetList.clear();
-
-                for (int i = 0; i < Common.questionList.size(); i++) {
-                    Common.answerSheetList.add(new CurrentQuestion(i, Common.ANSWER_TYPE.NO_ANSWER));
-                }
-            }
-            setupQuestion();
+        if (Common.isOnlineMode) {
+            takeQuestionFromOnlineDB();
         } else {
-            OnlineDBHelper.getInstance(QuestionActivity.this,
-                    FirebaseDatabase.getInstance())
-                    .readData(new MyQuestionListCallback() {
-                        @Override
-                        public void setQuestionList(List<Question> questionList) {
-                            Common.questionList.clear();
-                            Common.questionList = questionList;
-
-                            if (Common.questionList.size() == 0) {
-                                new MaterialStyledDialog.Builder(QuestionActivity.this)
-                                        .setTitle("Ooops")
-                                        .setIcon(R.drawable.ic_sentiment_very_dissatisfied_black_24dp)
-                                        .setDescription("We don't have any questions in this " + Common.selectedCategory.getName() + " category")
-                                        .setPositiveText("OK")
-                                        .onPositive(new MaterialDialog.SingleButtonCallback() {
-                                            @Override
-                                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                                dialog.dismiss();
-                                                finish();
-                                            }
-                                        }).show();
-                            } else {
-                        /*
-            Generate answerSheet item from question
-            30 q = 30 answer sheet item
-            so 1 q = 1 a.s.i.
-             */
-
-                                if (Common.answerSheetList.size() > 0)
-                                    Common.answerSheetList.clear();
-
-                                for (int i = 0; i < Common.questionList.size(); i++) {
-                                    Common.answerSheetList.add(new CurrentQuestion(i, Common.ANSWER_TYPE.NO_ANSWER));
-                                }
-                            }
-                            setupQuestion();
-                        }
-                    }, Common.selectedCategory.getName().replace(" ", "").replace("/", "_"));
-
+            takeQuestionFromSQLLiteDB();
         }
     }
 
+    private void takeQuestionFromSQLLiteDB() {
+        Common.questionList = DBHelper.getInstance(this).getQuestionByCategory(Common.selectedCategory.getId());
+        if (Common.questionList.size() == 0) {
+            new MaterialStyledDialog.Builder(this)
+                    .setTitle("Ooops")
+                    .setIcon(R.drawable.ic_sentiment_very_dissatisfied_black_24dp)
+                    .setDescription("We don't have any questions in this " + Common.selectedCategory.getName() + " category")
+                    .setPositiveText("OK")
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            dialog.dismiss();
+                            finish();
+                        }
+                    }).show();
+        } else {
+                        /*
+            Generate answerSheet item from question
+            30 q = 30 answer sheet item
+            so 1 q = 1 a.s.i.
+             */
+
+            if (Common.answerSheetList.size() > 0) Common.answerSheetList.clear();
+
+            for (int i = 0; i < Common.questionList.size(); i++) {
+                Common.answerSheetList.add(new CurrentQuestion(i, Common.ANSWER_TYPE.NO_ANSWER));
+            }
+        }
+        setupQuestion();
+    }
 
 
+    private void takeQuestionFromOnlineDB() {
+        OnlineDBHelper.getInstance(QuestionActivity.this,
+                FirebaseDatabase.getInstance())
+                .readData(new MyQuestionListCallback() {
+                    @Override
+                    public void setQuestionList(List<Question> questionList) {
+                        Common.questionList.clear();
+                        Common.questionList = questionList;
+
+                        if (Common.questionList.size() == 0) {
+                            new MaterialStyledDialog.Builder(QuestionActivity.this)
+                                    .setTitle("Ooops")
+                                    .setIcon(R.drawable.ic_sentiment_very_dissatisfied_black_24dp)
+                                    .setDescription("We don't have any questions in this " + Common.selectedCategory.getName() + " category")
+                                    .setPositiveText("OK")
+                                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                        @Override
+                                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                            dialog.dismiss();
+                                            finish();
+                                        }
+                                    }).show();
+                        } else {
+
+                        /*
+            Generate answerSheet item from question
+            30 q = 30 answer sheet item
+            so 1 q = 1 a.s.i.
+             */
+                            if (Common.answerSheetList.size() > 0){
+                                Common.answerSheetList.clear();
+                            }
+
+
+                            for (int i = 0; i < Common.questionList.size(); i++) {
+                                Common.answerSheetList.add(new CurrentQuestion(i, Common.ANSWER_TYPE.NO_ANSWER));
+                            }
+
+                        }
+                        setupQuestion();
+                    }
+                }, Common.selectedCategory.getName().replace(" ", "").replace("/", "_"));
+    }
 
 
     private void setupQuestion() {
-
         if (Common.questionList.size() > 0) {
 
             // Show TextView rightAnswer and TextView  - timer
@@ -266,7 +268,7 @@ public class QuestionActivity extends AppCompatActivity
             answer_sheet_view.setHasFixedSize(true);
 
             //if questionList >5 we will sperate 2 rows
-            if (Common.questionList.size() > 5) {
+            if (Common.questionList.size() > 2) {
                 answer_sheet_view.setLayoutManager(new GridLayoutManager(this, Common.questionList.size() / 2));
             }
             answerSheetAdapter = new AnswerSheetAdapter(this, Common.answerSheetList);
@@ -352,7 +354,7 @@ public class QuestionActivity extends AppCompatActivity
 
                     Log.d("CorrectAnswer", "Common.answerSheetList.size()" + Common.answerSheetList.size());
 
-                    if (Common.answerSheetList.get(position).getType()==Common.ANSWER_TYPE.NO_ANSWER){
+                    if (Common.answerSheetList.get(position).getType() == Common.ANSWER_TYPE.NO_ANSWER) {
                         Common.answerSheetList.set(position, question_state); // Set question answer for answersheet
                         answerSheetAdapter.notifyDataSetChanged(); // Change color in answerSheet
 
@@ -362,7 +364,7 @@ public class QuestionActivity extends AppCompatActivity
                                 .append(String.format("%d", Common.questionList.size())).toString());
                         txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
 
-                        Log.d("CorrectAnswer",question_state.getType()+"  :2question_state.getType()");
+                        Log.d("CorrectAnswer", question_state.getType() + "  :2question_state.getType()");
 
 
                     }
@@ -372,8 +374,6 @@ public class QuestionActivity extends AppCompatActivity
                         questionFragment.showCorrectAnswer();
                         questionFragment.disableAnswer();
                     }
-
-
 
 
                 }
@@ -465,9 +465,9 @@ public class QuestionActivity extends AppCompatActivity
         if (id == R.id.menu_done) {
             finishGame();
         } else if (id == R.id.menu_adjust) {
-            Toast.makeText(this,"menu_adjust В розробці", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "menu_adjust В розробці", Toast.LENGTH_LONG).show();
         } else if (id == R.id.menu_send_error) {
-            String aEmailList[] = { "authentikos.supp@gmail.com"};
+            String aEmailList[] = {"authentikos.supp@gmail.com"};
             Question currentQuestion = Common.questionList.get(viewPager.getCurrentItem());
             composeEmail(aEmailList, currentQuestion);
             //формируем email - получателей
@@ -481,12 +481,12 @@ public class QuestionActivity extends AppCompatActivity
 
 
     public void composeEmail(String[] addresses, Question question) {
-        String subject = "Помилка у питанні  ID"+question.getId();
+        String subject = "Помилка у питанні  ID" + question.getId();
         Intent intent = new Intent(Intent.ACTION_SENDTO);
         intent.setData(Uri.parse("mailto:")); // only email apps should handle this
         intent.putExtra(Intent.EXTRA_EMAIL, addresses);
         intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-        intent.putExtra(Intent.EXTRA_TEXT, "Питання: "+question.getQuestionText());
+        intent.putExtra(Intent.EXTRA_TEXT, "Питання: " + question.getQuestionText());
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         }
@@ -497,7 +497,7 @@ public class QuestionActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == Activity.RESULT_OK) {
-            Log.d("TAG","Activity.RESULT_OK");
+            Log.d("TAG", "Activity.RESULT_OK");
             String action = data.getStringExtra("action");
             if (action == null || TextUtils.isEmpty(action)) {
                 int questionNum = data.getIntExtra(Common.KEY_BACK_FROM_RESULT, -1);
@@ -511,7 +511,7 @@ public class QuestionActivity extends AppCompatActivity
                 txt_timer.setVisibility(View.GONE);
             } else {
                 if (action.equals("viewquizanswer")) {
-                    Log.d("TAG","viewquizanswer");
+                    Log.d("TAG", "viewquizanswer");
                     viewPager.setCurrentItem(0);
 
                     isAnswerModeView = true;
@@ -526,7 +526,7 @@ public class QuestionActivity extends AppCompatActivity
                         Common.fragmentsList.get(i).disableAnswer();
                     }
                 } else if (action.equals("doitagain")) {
-                    Log.d("doitagain","doitagain");
+                    Log.d("doitagain", "doitagain");
                     viewPager.setCurrentItem(0);
 
                     isAnswerModeView = false;
@@ -539,20 +539,19 @@ public class QuestionActivity extends AppCompatActivity
                     for (CurrentQuestion item : Common.answerSheetList) {
                         item.setType(Common.ANSWER_TYPE.NO_ANSWER); // RESET ALL QUESTION
                     }
-                    Log.d("doitagain","RESET ALL QUESTION_Common.ANSWER_TYPE.NO_ANSWER");
-
+                    Log.d("doitagain", "RESET ALL QUESTION_Common.ANSWER_TYPE.NO_ANSWER");
 
 
                     answerSheetAdapter = new AnswerSheetAdapter(QuestionActivity.this, Common.answerSheetList);
                     answerSheetAdapter.notifyDataSetChanged();
 
-                    answerSheetHelperAdapter = new AnswerSheetHelperAdapter(this,Common.answerSheetList);
+                    answerSheetHelperAdapter = new AnswerSheetHelperAdapter(this, Common.answerSheetList);
                     answerSheetHelperAdapter.notifyDataSetChanged();
 
                     for (int i = 0; i < Common.fragmentsList.size(); i++) {
                         Common.fragmentsList.get(i).resetQuestion();
                     }
-                    Log.d("doitagain","RESET ALL QUESTION.resetQuestion()");
+                    Log.d("doitagain", "RESET ALL QUESTION.resetQuestion()");
                 }
             }
         }
@@ -560,7 +559,6 @@ public class QuestionActivity extends AppCompatActivity
     }
 
     private void finishGame() {
-        Common.isActiveActivity = false;
         int position = viewPager.getCurrentItem();
 
         QuestionFragment questionFragment = Common.fragmentsList.get(position);
@@ -585,28 +583,23 @@ public class QuestionActivity extends AppCompatActivity
         }
  */
 
-        for (QuestionFragment fQuestionFragment:Common.fragmentsList){
+        for (QuestionFragment fQuestionFragment : Common.fragmentsList) {
             if (fQuestionFragment.getSelectedAnswer().getType() == Common.ANSWER_TYPE.NO_ANSWER) {
                 fQuestionFragment.showCorrectAnswer();
                 fQuestionFragment.disableAnswer();
             }
         }
 
-
-
-
-
         // Here we navigate to result Activity
 
         Intent intent = new Intent(QuestionActivity.this, ResultActivity.class);
         Common.timer = Common.TOTAL_TIME - time_play;
-        Common.no_answer_counter = Common.questionList.size() - (Common.wrong_answer_count + Common.right_answer_count);
+        Common.no_answer_counter = Common.questionList.size() -
+                (Common.wrong_answer_count + Common.right_answer_count);
         Common.data_question = new StringBuilder(new Gson().toJson(Common.answerSheetList));
 
         startActivityForResult(intent, CODE_GET_RESULT);
 
     }
-
-
 
 }

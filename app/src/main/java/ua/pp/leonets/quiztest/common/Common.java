@@ -19,7 +19,7 @@ public class Common {
     public static final String KEY_GO_TO_QUESTION = "GO_TO_QUESTION";
     public static final String KEY_BACK_FROM_RESULT = "BACK_FROM_RESULT";
     public static final String KEY_SAVE_ONLINE_MODE = "ONLINE_MODE";
-    public static boolean isActiveActivity = true;
+
 
     public static List<Question> questionList = new ArrayList<>();
     public static Category selectedCategory = new Category();
@@ -35,7 +35,9 @@ public class Common {
     public static StringBuilder data_question = new StringBuilder();
 
     public static ArrayList<QuestionFragment> fragmentsList = new ArrayList<>();
-    public static TreeSet<String> selected_values =  new TreeSet<>();
+
+    public static List<String> selected_values =  new ArrayList<>();
+
     public static boolean isOnlineMode = false;
 
     public enum ANSWER_TYPE{

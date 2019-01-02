@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,8 +70,11 @@ public class DBHelper extends SQLiteAssetHelper {
     public List<Question> getQuestionByCategory(int category) {
         Log.d("TAG", "call method getQuestionByCategory() category:"+category);
 
-        SQLiteDatabase db = instance.getWritableDatabase();
+
+
         //SELECT * FROM Question WHERE CategoryID = %d ORDER BY RANDOM() LIMIT 30
+
+        SQLiteDatabase db = instance.getWritableDatabase();
         Cursor cursor = db.rawQuery(String.format("SELECT * FROM Question WHERE CategoryID = %d ORDER BY RANDOM() LIMIT 30", category), null);
         List<Question> questions = new ArrayList<>();
         if (cursor.moveToFirst()) {
@@ -77,6 +82,7 @@ public class DBHelper extends SQLiteAssetHelper {
             while (!cursor.isAfterLast()) {
 
                 Question question = new Question(
+
                         cursor.getInt(cursor.getColumnIndex("ID")),
                         cursor.getString(cursor.getColumnIndex("QuestionText")),
                         cursor.getString(cursor.getColumnIndex("QuestionImage")),
@@ -84,7 +90,7 @@ public class DBHelper extends SQLiteAssetHelper {
                         cursor.getString(cursor.getColumnIndex("AnswerB")),
                         cursor.getString(cursor.getColumnIndex("AnswerC")),
                         cursor.getString(cursor.getColumnIndex("AnswerD")),
-                        cursor.getString(cursor.getColumnIndex("CorrectAnswer")),
+                        new ArrayList<String>(),
                         cursor.getInt(cursor.getColumnIndex("IsImageQuestion"))==0?Boolean.FALSE:Boolean.TRUE,
                         cursor.getInt(cursor.getColumnIndex("CategoryID")));
 
@@ -99,5 +105,7 @@ public class DBHelper extends SQLiteAssetHelper {
 
         return questions;
     }
+
+
 
 }
