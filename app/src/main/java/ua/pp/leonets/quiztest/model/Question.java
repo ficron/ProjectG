@@ -1,12 +1,18 @@
 package ua.pp.leonets.quiztest.model;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class Question {
 
     private int id;
     private String questionText, questionImage, answerA, answerB, answerC, answerD;
+
+
+    private ArrayList<String> answers = new ArrayList<>();
     private ArrayList<String> correctAnswers = new ArrayList<>();
     private boolean isImageQuestion;
     private int categoryId;
@@ -106,5 +112,14 @@ public class Question {
 
     public void setCategoryId(int categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public ArrayList<String> getAnswers(){
+        answers.add(answerA);
+        answers.add(answerB);
+        answers.add(answerC);
+        answers.add(answerD);
+        Collections.shuffle(answers);
+        return answers;
     }
 }

@@ -22,8 +22,10 @@ public class Common {
 
 
     public static List<Question> questionList = new ArrayList<>();
+    public static List<Category> categoryList = new ArrayList<>();
     public static Category selectedCategory = new Category();
     public static List <CurrentQuestion> answerSheetList = new ArrayList<>();
+
 
     public static List <CurrentQuestion> answerSheetListFiltered = new ArrayList<>();
     public static CountDownTimer countDownTimer;

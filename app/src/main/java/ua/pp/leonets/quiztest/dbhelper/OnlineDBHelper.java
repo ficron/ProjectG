@@ -31,6 +31,7 @@ public class OnlineDBHelper {
     DatabaseReference reference;
 
     private static OnlineDBHelper instance;
+    private String allQuestionName = "Всі запитання";
 
 
     public OnlineDBHelper(Context context, FirebaseDatabase firebaseDatabase) {
@@ -42,81 +43,122 @@ public class OnlineDBHelper {
 
     public static synchronized OnlineDBHelper getInstance(Context context, FirebaseDatabase firebaseDatabase) {
         if (instance == null) {
-            instance = new OnlineDBHelper(context,firebaseDatabase);
+            instance = new OnlineDBHelper(context, firebaseDatabase);
             FirebaseApp.initializeApp(context);
-        }else{
-            instance.context=context;
+        } else {
+            instance.context = context;
         }
         return instance;
     }
 
 
-
-    public void getAllCategories(final MyCategoriesCallback myCallback){
+    public void getAllCategories(final MyCategoriesCallback myCallback) {
 
         /*
 
          */
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        List<Category> categoryArrayList = new ArrayList<>();
-                        for (DataSnapshot questionSnapshot:dataSnapshot.getChildren()){
-                            Category category = new Category();
-                            category.setName(questionSnapshot.getKey());
-                            categoryArrayList.add(category);
-                        }
-                        myCallback.setCategoriesList(categoryArrayList);
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<Category> categoryArrayList = new ArrayList<>();
+                categoryArrayList.add(new Category(1001, allQuestionName, null));
+                for (DataSnapshot questionSnapshot : dataSnapshot.getChildren()) {
+                    Category category = new Category();
+                    category.setName(questionSnapshot.getKey());
+                    categoryArrayList.add(category);
+
+                    Common.categoryList = categoryArrayList;
+
+                }
+                myCallback.setCategoriesList(categoryArrayList);
 
 
-                        //if (dialog.isShowing())dialog.dismiss();
+                //if (dialog.isShowing())dialog.dismiss();
 
-                    }
+            }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Toast.makeText(context,""+databaseError.getMessage(),Toast.LENGTH_LONG).show();
-                    }
-                });
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(context, "" + databaseError.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
-    public void readData (final MyQuestionListCallback myCallback, String category){
+    public void readData(final MyQuestionListCallback myCallback, final String category) {
 
-         final AlertDialog dialog = new SpotsDialog.Builder()
+        final AlertDialog dialog = new SpotsDialog.Builder()
                 .setContext(context)
                 .setCancelable(false)
                 .build();
 
-        if (!dialog.isShowing()){
+        if (!dialog.isShowing()) {
             dialog.show();
         }
 
-        reference.child(category)
-                .child("question")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        List<Question> questionList = new ArrayList<>();
-                        for (DataSnapshot questionSnapshot:dataSnapshot.getChildren()){
-                            questionList.add(questionSnapshot.getValue(Question.class));
+
+        if (!category.equals(allQuestionName.replace(" ", "").replace("/", "_"))) {
+            Log.d("TAG", "Inside readData, getQuestions by Category");
+            reference.child(category)
+                    .child("question")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            List<Question> questionList = new ArrayList<>();
+
+                            for (DataSnapshot questionSnapshot : dataSnapshot.getChildren()) {
+                                questionList.add(questionSnapshot.getValue(Question.class));
+                            }
+
+                            myCallback.setQuestionList(questionList);
+
+                            if (dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
+
                         }
-                        myCallback.setQuestionList(questionList);
 
-
-
-                        for (Question question: Common.questionList){
-                            Log.d("TAG",question.getCorrectAnswers().size()+" :getCorrectAnswers().size()");
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Toast.makeText(context, "" + databaseError.getMessage(), Toast.LENGTH_LONG).show();
                         }
-                        if (dialog.isShowing())dialog.dismiss();
+                    });
+        } else {
 
+            myCallback.setQuestionList(getAllQuestions());
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+
+
+        }
+
+    }
+
+    private List<Question> getAllQuestions() {
+        Log.d("TAG", " Inside AllQuestionMethod");
+        final List<Question> questionList = new ArrayList<>();
+
+
+        for (Category mCategory : Common.categoryList) {
+            reference.child(mCategory.getName())
+                    .child("question")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot questionSnapshot : dataSnapshot.getChildren()) {
+                        questionList.add(questionSnapshot.getValue(Question.class));
+                        Log.d("TAG", questionList.size() + " ");
                     }
+                }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Toast.makeText(context,""+databaseError.getMessage(),Toast.LENGTH_LONG).show();
-                    }
-                });
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                }
+            });
+        }
+
+        return questionList;
     }
 
 

@@ -99,16 +99,19 @@ public class QuestionFragment extends Fragment implements IQuestion {
             txt_question_txt = (TextView) itemView.findViewById(R.id.text_question_txt);
             txt_question_txt.setText(question.getQuestionText());
 
+            ArrayList<String> answers = question.getAnswers();
 
             ckbA = (CheckBox) itemView.findViewById(R.id.ckbA);
-            ckbA.setText(question.getAnswerA());
+            ckbA.setText(answers.get(0));
             ckbA.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (b) {
 
                         if (isSingle){
-                            uncheckedAll();
+                            ckbB.setChecked(false);
+                            ckbC.setChecked(false);
+                            ckbD.setChecked(false);
                             Log.d("TAG","Common.selected_values.size()"+Common.selected_values.size());
                         }
 
@@ -121,14 +124,17 @@ public class QuestionFragment extends Fragment implements IQuestion {
 
 
             ckbB = (CheckBox) itemView.findViewById(R.id.ckbB);
-            ckbB.setText(question.getAnswerB());
+            ckbB.setText(answers.get(1));
             ckbB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (b) {
 
                         if (isSingle){
-                            uncheckedAll();
+                            Common.selected_values.clear();
+                            ckbA.setChecked(false);
+                            ckbC.setChecked(false);
+                            ckbD.setChecked(false);
                             Log.d("TAG","Common.selected_values.size()"+Common.selected_values.size());
                         }
 
@@ -140,14 +146,17 @@ public class QuestionFragment extends Fragment implements IQuestion {
             });
 
             ckbC = (CheckBox) itemView.findViewById(R.id.ckbC);
-            ckbC.setText(question.getAnswerC());
+            ckbC.setText(answers.get(2));
             ckbC.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (b) {
 
                         if (isSingle){
-                            uncheckedAll();
+                            Common.selected_values.clear();
+                            ckbA.setChecked(false);
+                            ckbB.setChecked(false);
+                            ckbD.setChecked(false);
                             Log.d("TAG","Common.selected_values.size()"+Common.selected_values.size());
                         }
 
@@ -159,14 +168,17 @@ public class QuestionFragment extends Fragment implements IQuestion {
             });
 
             ckbD = (CheckBox) itemView.findViewById(R.id.ckbD);
-            ckbD.setText(question.getAnswerD());
+            ckbD.setText(answers.get(3));
             ckbD.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (b) {
 
                         if (isSingle){
-                            uncheckedAll();
+                            Common.selected_values.clear();
+                            ckbA.setChecked(false);
+                            ckbB.setChecked(false);
+                            ckbC.setChecked(false);
                             Log.d("TAG","Common.selected_values.size()"+Common.selected_values.size());
                         }
 
@@ -275,14 +287,6 @@ public class QuestionFragment extends Fragment implements IQuestion {
         ckbD.setTextColor(Color.BLACK);
     }
 
-    private void uncheckedAll(){
-        ckbA.setChecked(false);
-        ckbB.setChecked(false);
-        ckbC.setChecked(false);
-        ckbD.setChecked(false);
-
-
-    }
 
 
 
