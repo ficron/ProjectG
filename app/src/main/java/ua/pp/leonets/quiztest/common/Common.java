@@ -42,6 +42,7 @@ public class Common {
 
     public static boolean isOnlineMode = false;
 
+
     public enum ANSWER_TYPE{
         NO_ANSWER,
         WRONG_ANSWER,

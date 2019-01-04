@@ -15,7 +15,10 @@ import com.google.firebase.database.ValueEventListener;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import dmax.dialog.SpotsDialog;
 import ua.pp.leonets.quiztest.common.Common;
@@ -53,23 +56,23 @@ public class OnlineDBHelper {
 
 
     public void getAllCategories(final MyCategoriesCallback myCallback) {
-
-        /*
-
-         */
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 List<Category> categoryArrayList = new ArrayList<>();
                 categoryArrayList.add(new Category(1001, allQuestionName, null));
-                for (DataSnapshot questionSnapshot : dataSnapshot.getChildren()) {
-                    Category category = new Category();
-                    category.setName(questionSnapshot.getKey());
+                for (DataSnapshot categorynSnapshot : dataSnapshot.getChildren()) {
+                    //Category category = new Category();
+                    //category.setName(categorynSnapshot.getKey());
+                    Category category = categorynSnapshot.getValue(Category.class);
+                    category.setName(categorynSnapshot.getKey());
+
                     categoryArrayList.add(category);
 
                     Common.categoryList = categoryArrayList;
 
                 }
+
                 myCallback.setCategoriesList(categoryArrayList);
 
 
@@ -96,70 +99,50 @@ public class OnlineDBHelper {
         }
 
 
-        if (!category.equals(allQuestionName.replace(" ", "").replace("/", "_"))) {
-            Log.d("TAG", "Inside readData, getQuestions by Category");
-            reference.child(category)
-                    .child("question")
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            List<Question> questionList = new ArrayList<>();
+        Log.d("TAG", "Inside readData, getQuestions by Category");
+        reference.child(category)
+                .child("question")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        List<Question> questionList = new ArrayList<>();
 
+                        if (!category.equals(allQuestionName.replace(" ", "").replace("/", "_"))) {
                             for (DataSnapshot questionSnapshot : dataSnapshot.getChildren()) {
                                 questionList.add(questionSnapshot.getValue(Question.class));
                             }
-
                             myCallback.setQuestionList(questionList);
+                        } else {
 
-                            if (dialog.isShowing()) {
-                                dialog.dismiss();
+                            List<Question> mList = new ArrayList<>();
+
+                            for (Category mCategory:Common.categoryList){
+                                mList.addAll(mCategory.getQuestion());
                             }
-
+                            myCallback.setQuestionList(mList);
                         }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                            Toast.makeText(context, "" + databaseError.getMessage(), Toast.LENGTH_LONG).show();
+
+                        if (dialog.isShowing()) {
+                            dialog.dismiss();
                         }
-                    });
-        } else {
 
-            myCallback.setQuestionList(getAllQuestions());
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-
-
-        }
-
-    }
-
-    private List<Question> getAllQuestions() {
-        Log.d("TAG", " Inside AllQuestionMethod");
-        final List<Question> questionList = new ArrayList<>();
-
-
-        for (Category mCategory : Common.categoryList) {
-            reference.child(mCategory.getName())
-                    .child("question")
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot questionSnapshot : dataSnapshot.getChildren()) {
-                        questionList.add(questionSnapshot.getValue(Question.class));
-                        Log.d("TAG", questionList.size() + " ");
                     }
-                }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Toast.makeText(context, "" + databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
 
-                }
-            });
-        }
 
-        return questionList;
     }
+
+
+
+
+
+
 
 
 }

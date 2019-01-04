@@ -1,8 +1,12 @@
 package ua.pp.leonets.quiztest.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Category {
     private int id;
     private String name, image;
+    private List<Question> question = new ArrayList<>();
 
     public Category(int id, String name, String image) {
         this.id = id;
@@ -36,5 +40,13 @@ public class Category {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public List<Question> getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(List<Question> question) {
+        this.question = question;
     }
 }
