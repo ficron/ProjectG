@@ -3,6 +3,7 @@ package ua.pp.leonets.quiztest.adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ public class AnswerSheetAdapter extends RecyclerView.Adapter<AnswerSheetAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
+        //Log.d("CorrectAnswer","inside onBindViewHolder AnswerSheetAdapter currentQuestionList.get(i).getType()  "+ currentQuestionList.get(i).getType());
         if (currentQuestionList.get(i).getType()== Common.ANSWER_TYPE.RIGHT_ANSWER){
             myViewHolder.question_item.setBackgroundResource(R.drawable.grid_question_right_answer);
         }else if (currentQuestionList.get(i).getType()== Common.ANSWER_TYPE.WRONG_ANSWER){

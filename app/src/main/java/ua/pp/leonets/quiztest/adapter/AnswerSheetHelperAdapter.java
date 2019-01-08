@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +38,7 @@ public class AnswerSheetHelperAdapter extends RecyclerView.Adapter<AnswerSheetHe
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
-
+        Log.d("CorrectAnswer","inside onBindViewHolder AnswerSheetHelperAdapter currentQuestionList.get(i).getType()  "+ currentQuestionList.get(i).getType());
         myViewHolder.txt_question_num.setText(String.valueOf(i + 1)); // Show question number
         if (currentQuestionList.get(i).getType() == Common.ANSWER_TYPE.RIGHT_ANSWER)
             myViewHolder.layout_wrapper.setBackgroundResource(R.drawable.grid_question_right_answer);

@@ -279,10 +279,13 @@ public class QuestionFragment extends Fragment implements IQuestion {
 
         ckbA.setTypeface(null, Typeface.NORMAL);
         ckbA.setTextColor(Color.BLACK);
+
         ckbB.setTypeface(null, Typeface.NORMAL);
         ckbB.setTextColor(Color.BLACK);
+
         ckbC.setTypeface(null, Typeface.NORMAL);
         ckbC.setTextColor(Color.BLACK);
+
         ckbD.setTypeface(null, Typeface.NORMAL);
         ckbD.setTextColor(Color.BLACK);
     }
