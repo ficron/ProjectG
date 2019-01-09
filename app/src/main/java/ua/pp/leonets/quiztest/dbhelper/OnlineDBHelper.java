@@ -15,11 +15,7 @@ import com.google.firebase.database.ValueEventListener;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-
 import dmax.dialog.SpotsDialog;
 import ua.pp.leonets.quiztest.common.Common;
 import ua.pp.leonets.quiztest.interfaces.MyCategoriesCallback;
@@ -32,7 +28,6 @@ public class OnlineDBHelper {
     private FirebaseDatabase firebaseDatabase;
     private Context context;
     DatabaseReference reference;
-
     private static OnlineDBHelper instance;
     private String allQuestionName = "Всі запитання";
 

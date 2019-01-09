@@ -218,7 +218,7 @@ public class QuestionActivity extends AppCompatActivity
                             new MaterialStyledDialog.Builder(QuestionActivity.this)
                                     .setTitle("Ooops")
                                     .setIcon(R.drawable.ic_sentiment_very_dissatisfied_black_24dp)
-                                    .setDescription("We don't have any questions in this " + Common.selectedCategory.getName() + " category")
+                                    .setDescription("Немає жодного питання в цій категорії" + Common.selectedCategory.getName() + " category")
                                     .setPositiveText("OK")
                                     .onPositive(new MaterialDialog.SingleButtonCallback() {
                                         @Override
